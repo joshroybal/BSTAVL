@@ -6,13 +6,12 @@ public class AVLDriver
       BufferedReader input = new BufferedReader(reader);
       AVL tree = new AVL();
       if (args.length > 0)
-      {  System.out.println(args[0]);
+      {  tree.serialized = false;
          tree.readBinaryFile(args[0]);
       }
       else
       {  tree.serialized = true;
-         try { tree.deserialize_(); }
-         catch(Exception e) {}
+         tree.binaryDeserialize();
       }
       System.out.println(" h = " + tree.height());
       printmenu();
@@ -21,7 +20,7 @@ public class AVLDriver
       {  switch (choice)
          {  case '1':
                while (true)
-               {  Node newnode = enterNode(input);
+               {  BST.Node newnode = enterNode(input);
                   if (newnode == null) break;
                   tree.insert(newnode);
                }
@@ -29,7 +28,7 @@ public class AVLDriver
             case '2':
                System.out.print(" key: ");
                String key = input.readLine();
-               Node target = tree.retrieve(key);
+               AVL.Node target = tree.retrieve(key);
                if (target != null) System.out.println(" data: " + target.data);
                else System.out.println(" target not found");
                break;
@@ -63,7 +62,8 @@ public class AVLDriver
                tree.postorder();
                break;
             case '8':
-               tree.serialize();
+               tree.textSerialize();
+					tree.binarySerialize();
                break;
             default:
                System.out.println(" error - please try again");
@@ -72,7 +72,9 @@ public class AVLDriver
          choice = input.readLine().charAt(0);
       }
       input.close();
-      tree.serialize_();   // binary serialization
+		tree.textSerialize();
+      tree.binarySerialize();
+		tree.defoliate();
       System.out.println(" copyright (c) 2018 Josh Roybal");
    }
 
@@ -90,12 +92,12 @@ public class AVLDriver
       System.out.print(" -> ");
    }
 
-   public static Node enterNode(BufferedReader br) throws IOException
+   public static AVL.Node enterNode(BufferedReader br) throws IOException
    {  System.out.print(" key: ");
       String key = br.readLine();
       if (key.length() == 0) return null;
       System.out.print(" data: ");
       String data = br.readLine();
-      return new Node(key, data);
+      return new AVL.Node(key, data);
    }
 }

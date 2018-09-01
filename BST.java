@@ -1,12 +1,43 @@
 import java.io.*;
 // implementations are recursive
 class BST
-{  protected Node root;  // root of tree
+{  static class Node
+   {  // Objects represents nodes of linked list
+      protected String key;
+      protected String data;
+      protected int height;
+      protected Node left;
+      protected Node right;
+
+      // constructor definition
+      Node(String key, String data)
+      {  this.key = key;
+         this.data = data;
+         this.height = 1;
+         this.left = null;
+         this.right = null;
+      }
+
+      public String toString()
+      {  return key + "\t" + data;
+      }
+
+      public byte[] toRecord()
+      {  return String.format("%-40s%-40s", key, data).getBytes();
+      }
+   }
+ 
+   static protected Node root;  // root of tree
+   public boolean serialized; // input file serialized flag
    // constructor definition
    BST()
    {  root = null;
    }
 
+	public boolean isEmpty()
+	{	return root == null ? true : false;
+	}
+	
    public void insert(Node newnode)
    {  root = insert(root, newnode);
    }
@@ -77,13 +108,9 @@ class BST
       return root;
    }
 
-   protected String minKey(Node root)
-   {  String min_key = root.key;
-      while (root.left != null)
-      {  min_key = root.left.key;
-         root = root.left;
-      }
-      return min_key;
+   protected String minKey(Node node)
+   {  if (node.left == null) return node.key;
+      return node.left.key;
    }
 
    public void preorder()
@@ -91,10 +118,11 @@ class BST
    }
 
    protected void preorder(Node current)
-   {  if (current == null) return;
-      System.out.println(current);
-      preorder(current.left);
-      preorder(current.right);
+   {  if (current != null)
+      {  System.out.println(current.height + " " + current);
+         preorder(current.left);
+         preorder(current.right);
+      }
    }
 
    public void inorder()
@@ -102,10 +130,11 @@ class BST
    }
 
    protected void inorder(Node current)
-   {  if (current == null) return;
-      inorder(current.left);
-      System.out.println(current);
-      inorder(current.right);
+   {  if (current != null)
+      {  inorder(current.left);
+         System.out.println(current);
+         inorder(current.right);
+      }
    }
 
    public void postorder()
@@ -113,95 +142,159 @@ class BST
    }
 
    protected void postorder(Node current)
-   {  if (current == null) return;
-      postorder(current.left);
-      postorder(current.right);
-      System.out.println(current);
+   {  if (current != null)
+      {  postorder(current.left);
+         postorder(current.right);
+         System.out.println(current.height + " " + current);
+      }
    }
 
-   public void serialize() throws IOException
+   public void textSerialize() throws IOException
    {  File outfile = new File("tree.txt");
       FileWriter fw = new FileWriter(outfile);
       BufferedWriter bw = new BufferedWriter(fw);
-      serialize(bw, root);
+      textSerialize(bw, root);
       bw.close();
       fw.close();
-      System.out.println(" binary search tree serialized");
+      System.out.println(" binary search tree serialized from text file");
    }
 
-   protected void serialize(BufferedWriter bw, Node current) throws IOException
-   {  if (current == null) return;
-      else
+   protected void textSerialize(BufferedWriter bw, Node current) throws IOException
+   {  if (current != null)
       {  bw.write(current.toString());
          bw.newLine();
+         textSerialize(bw, current.left);
+         textSerialize(bw, current.right);
       }
-      serialize(bw, current.left);
-      serialize(bw, current.right);
    }
 
-   public void deserialize() throws IOException
+   public void textDeserialize() throws IOException
    {  File infile = new File("tree.txt");
+      if (!infile.exists()) return;
       FileReader fr = new FileReader(infile);
       BufferedReader br = new BufferedReader(fr);
-      deserialize(br);
+      textDeserialize(br, root);
       br.close();
       fr.close();
-      System.out.println(" binary search tree deserialized");
+      System.out.println(" binary search tree deserialized to text file");
    }
 
-   protected void deserialize(BufferedReader br) throws IOException
+   protected void textDeserialize(BufferedReader br, Node node) throws IOException
    {  String line;
-      while ((line = br.readLine()) != null) {
-         int tabidx = line.indexOf('\t');
+      if ((line = br.readLine()) != null)
+      {  int tabidx = line.indexOf('\t');
          String key = line.substring(0, tabidx);
          String data = line.substring(tabidx + 1);
-         Node newnode = new Node(key, data);
-         insert(newnode);
+         node = new Node(key, data);
+         insert(node);
+         textDeserialize(br, node.left);
+         textDeserialize(br, node.right);
       }
    }
 
-   public void serialize_() throws IOException
+   public void binarySerialize() throws IOException
    {  File outfile = new File("tree.dat");
       FileOutputStream fos = new FileOutputStream(outfile);
       BufferedOutputStream bos = new BufferedOutputStream(fos);
-      serialize_(bos, root);
+      binarySerialize(bos, root);
       bos.close();
       fos.close();
       System.out.println(" binary search tree serialized to binary file");
    }
 
-   protected void serialize_(BufferedOutputStream bos, Node current)
+   protected void binarySerialize(BufferedOutputStream bos, Node current)
       throws IOException
    {  if (current != null)
-      {  bos.write(current.toRecord().getBytes());
-         serialize_(bos, current.left);
-         serialize_(bos, current.right);
+      {  bos.write(current.toRecord());
+         binarySerialize(bos, current.left);
+         binarySerialize(bos, current.right);
       }
    }
 
-   public void deserialize_() throws IOException
+   public void binaryDeserialize() throws IOException
    {  File infile = new File("tree.dat");
+		if (!infile.exists()) return;
       FileInputStream fis = new FileInputStream(infile);
-      BufferedInputStream bis = new BufferedInputStream(fis);
-      deserialize_(bis);
-      bis.close();
-      fis.close();
-      System.out.println(" binary search tree serialized from binary file");
+		BufferedInputStream bis = new BufferedInputStream(fis);
+		binaryDeserialize(bis, root);
+		bis.close();
+		fis.close();
+		System.out.println(" binary search tree serialized from binary file");
    }
 
    // read one record at a time from file and insert into binary search tree
-   protected void deserialize_(BufferedInputStream bis)
+   protected void binaryDeserialize(BufferedInputStream bis, Node node)
       throws IOException
    {  final int RECSIZ = 80, FLDSIZ = 40;
       byte[] buffer = new byte[RECSIZ];
-      while ( bis.read(buffer) != -1 )
+      if (bis.read(buffer) != -1 )
       {  String key = new String(buffer, 0, FLDSIZ);
          String data = new String(buffer, FLDSIZ - 1, FLDSIZ);
-         Node record = new Node(key.trim(), data.trim());
-         insert(record);
+         node = new Node(key.trim(), data.trim());
+         insert(node);
+			binaryDeserialize(bis, node.left);
+			binaryDeserialize(bis, node.right);
+		}
+   }
+
+   // read non-serialized files
+   public void readTextFile(String filename) throws IOException
+   {  File infile = new File(filename);
+      if (!infile.exists())
+      {  System.out.println(" error - file does not exist");
+         System.exit(1);
+      }
+      FileReader fr = new FileReader(infile);
+      BufferedReader br = new BufferedReader(fr);
+      readTextFile(br, root);
+      br.close();
+      fr.close();
+      System.out.println(" text file read into AVL binary search tree");
+   }
+
+   protected void readTextFile(BufferedReader br, Node node)
+   throws IOException
+   {  String line;
+      while ((line = br.readLine()) != null)
+      {  int tabidx = line.indexOf('\t');
+         String key = line.substring(0, tabidx);
+         String data = line.substring(tabidx + 1);
+         node = new Node(key, data);
+         insert(node);
       }
    }
 
+   public void readBinaryFile(String filename) throws IOException
+   {  File infile = new File(filename);
+      if (!infile.exists())
+      {  System.out.println(" error - file does not exist");
+         System.exit(1);
+      }
+      FileInputStream fis = new FileInputStream(infile);
+      BufferedInputStream bis = new BufferedInputStream(fis);
+      readBinaryFile(bis, root);
+      bis.close();
+      fis.close();
+      System.out.println(" binary file read into binary search tree");
+   }
+
+   protected void readBinaryFile(BufferedInputStream bis, Node node)
+      throws IOException
+   {  final int RECSIZ = 80, FLDSIZ = 40;
+      byte[] buffer = new byte[RECSIZ];
+      while (bis.read(buffer) != -1 )
+      {  String key = new String(buffer, 0, FLDSIZ);
+         String data = new String(buffer, FLDSIZ - 1, FLDSIZ);
+         node = new Node(key.trim(), data.trim());
+         insert(node);
+      }
+   }
+
+   public void defoliate()
+   {  root = null;
+   }
+
+   // utility methods
    public int height()
    {  return height(root);
    }
@@ -211,12 +304,10 @@ class BST
    }
 
    protected static int max(int m, int n)
-   {  if (m >= n) return m;
-      else return n;
+   {  return m >= n ? m : n;
    }
 
    protected static int min(int m, int n)
-   {  if (m <= n) return m;
-      else return n;
+   {  return m <= n ? m : n;
    }
 }

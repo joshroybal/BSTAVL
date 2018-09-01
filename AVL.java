@@ -1,9 +1,7 @@
 import java.io.*;
 
 public class AVL extends BST
-{  public boolean serialized;
-
-   protected Node insert(Node node, Node newnode)
+{  protected Node insert(Node node, Node newnode)
    {  if (node == null) return newnode;
       // BST insertion
       if (newnode.key.compareTo(node.key) < 0)
@@ -14,8 +12,12 @@ public class AVL extends BST
          return node;
 
       node.height = 1 + max(height(node.left), height(node.right));
-      if (serialized == true) return node;
+
+      if (serialized == true)
+         return node;
+
       int balance_no = 0;
+
       if (node != null)
          balance_no = height(node.left) - height(node.right);
 
@@ -69,25 +71,5 @@ public class AVL extends BST
 
       // Return new root
       return y;
-   }
-
-   public void readTextFile(String filename) throws IOException
-   {  File infile = new File(filename);
-      FileReader fr = new FileReader(infile);
-      BufferedReader br = new BufferedReader(fr);
-      deserialize(br);
-      br.close();
-      fr.close();
-      System.out.println(" Text file read into AVL binary search tree.");
-   }
-
-   public void readBinaryFile(String filename) throws IOException
-   {  File infile = new File(filename);
-      FileInputStream fis = new FileInputStream(infile);
-      BufferedInputStream bis = new BufferedInputStream(fis);
-      deserialize_(bis);
-      bis.close();
-      fis.close();
-      System.out.println(" Binary file read into AVL binary search tree.");
    }
 }

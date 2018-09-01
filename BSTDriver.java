@@ -5,20 +5,27 @@ public class BSTDriver
    {  InputStreamReader reader = new InputStreamReader(System.in);
       BufferedReader input = new BufferedReader(reader);
       BST tree = new BST();
-      tree.deserialize_();
+      if (args.length > 0)
+      {  tree.serialized = false;
+         tree.readBinaryFile(args[0]);
+      }
+      else
+      {  tree.serialized = true;
+         tree.binaryDeserialize();
+      }
       System.out.println(" h = " + tree.height());
       printmenu();
       char choice = input.readLine().charAt(0);
       while (choice != '0')
       {  switch (choice)
          {  case '1':
-               Node newnode = enterNode(input);
+               BST.Node newnode = enterNode(input);
                tree.insert(newnode);
                break;
             case '2':
                System.out.print(" key: ");
                String key = input.readLine();
-               Node target = tree.retrieve(key);
+               BST.Node target = tree.retrieve(key);
                if (target != null) System.out.println(" data: " + target.data);
                else System.out.println(" target not found");
                break;
@@ -52,7 +59,8 @@ public class BSTDriver
                tree.postorder();
                break;
             case '8':
-               tree.serialize();
+               tree.textSerialize();
+					tree.binarySerialize();
                break;
             default:
                System.out.println(" error - please try again");
@@ -61,7 +69,11 @@ public class BSTDriver
          choice = input.readLine().charAt(0);
       }
       input.close();
-      tree.serialize_();   // binary serialization
+		if (!tree.isEmpty())
+		{	tree.textSerialize();
+			tree.binarySerialize();
+			tree.defoliate();
+		}
       System.out.println(" copyright (c) 2018 Josh Roybal");
    }
 
@@ -79,11 +91,11 @@ public class BSTDriver
       System.out.print(" -> ");
    }
 
-   public static Node enterNode(BufferedReader br) throws IOException
+   public static BST.Node enterNode(BufferedReader br) throws IOException
    {  System.out.print(" key: ");
       String key = br.readLine();
       System.out.print(" data: ");
       String data = br.readLine();
-      return new Node(key, data);
+      return new BST.Node(key, data);
    }
 }
