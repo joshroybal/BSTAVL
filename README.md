@@ -1,2 +1,2 @@
 # BSTAVL
-Java console key based data retrieval using BST and AVL BST binary search trees.
+Java console BST and AVL BST binary search tree data structure test code.
