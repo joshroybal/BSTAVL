@@ -20,6 +20,10 @@ public class AVL extends BST
          super.right = this.right;
          super.left = this.left;
       }
+
+      public String toString()   // for debugging
+      {  return height + "\t" + key;
+      }
    }
 
    private Node root;
@@ -108,7 +112,8 @@ public class AVL extends BST
    }
 
    public String retrieve(String data)
-   {  Node target = (Node)retrieve(root, data);
+   {  copy();
+      Node target = (Node)retrieve(root, data);
       if (target != null)
          return target.key;
       else
@@ -117,6 +122,18 @@ public class AVL extends BST
 
    public void delete(String key)
    {  root = (Node)delete(root, key);
+   }
+
+   public void copy()
+   {  copy(root);
+   }
+
+   private void copy(Node node)
+   {  if (node != null)
+      {  node.setSuper();
+         copy(node.left);
+         copy(node.right);
+      }
    }
 
    public void preorder()
@@ -160,6 +177,7 @@ public class AVL extends BST
    {  File outfile = new File("tree.txt");
       FileWriter fw = new FileWriter(outfile);
       BufferedWriter bw = new BufferedWriter(fw);
+      copy();
       serialize(bw, root);
       bw.close();
       fw.close();

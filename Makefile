@@ -5,8 +5,7 @@ JC = javac
 	$(JC) $(JFLAGS) $*.java
 
 CLASSES = \
-			Node.java \
-        	BST.java \
+			BST.java \
 			AVL.java \
 			BSTDriver.java \
 			AVLDriver.java \
